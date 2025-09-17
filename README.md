@@ -87,6 +87,27 @@ LOG_LEVEL = INFO
 
 ### 3. Deploy
 
+#### 🚀 Render.com (Miễn phí)
+```bash
+# 1. Push code lên GitHub
+git add .
+git commit -m "Deploy to Render"
+git push origin main
+
+# 2. Tạo Web Service trên render.com
+# 3. Set environment variables
+# 4. Deploy!
+```
+📖 **Chi tiết**: Xem [README_RENDER.md](README_RENDER.md)
+
+#### 🚂 Railway (Có phí)
+```bash
+# Deploy với Railway CLI
+railway login
+railway link
+railway up
+```
+
 1. Railway sẽ auto-deploy khi push code
 2. Check logs trong Railway Dashboard
 3. Bot sẽ gửi startup message khi ready

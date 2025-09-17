@@ -2,6 +2,7 @@
 """
 Telegram Bot cho Pending Orders Monitor
 Main entry point - chạy bot và monitoring loop
+Optimized for Render.com deployment
 
 Tác giả: AI Assistant
 Ngày: 2025-09-17
@@ -9,6 +10,9 @@ Ngày: 2025-09-17
 
 import asyncio
 import logging
+import os
+import signal
+import sys
 from datetime import datetime, timezone
 from telegram import Bot
 from telegram.error import TelegramError
@@ -23,14 +27,24 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class PendingOrdersBot:
-    """Main bot class"""
-    
+    """Main bot class - optimized for Render.com"""
+
     def __init__(self):
         self.bot = None
         self.chat_id = config.TELEGRAM_CHAT_ID
         self.is_running = False
         self.startup_time = datetime.now(timezone.utc)
-        
+        self.setup_signal_handlers()
+
+    def setup_signal_handlers(self):
+        """Setup signal handlers cho graceful shutdown trên Render"""
+        def signal_handler(signum, frame):
+            logger.info(f"Received signal {signum}, shutting down gracefully...")
+            self.is_running = False
+
+        signal.signal(signal.SIGTERM, signal_handler)
+        signal.signal(signal.SIGINT, signal_handler)
+
     async def initialize(self) -> bool:
         """Khởi tạo bot và validate config"""
         try:
@@ -75,6 +89,10 @@ class PendingOrdersBot:
     
     async def send_startup_message(self):
         """Gửi message khi bot khởi động"""
+        # Lấy thông tin deployment environment
+        render_service = os.getenv('RENDER_SERVICE_NAME', 'Unknown')
+        render_region = os.getenv('RENDER_REGION', 'Unknown')
+
         message = f"""
 🚀 **{config.BOT_NAME} Started**
 
@@ -82,12 +100,14 @@ class PendingOrdersBot:
 📊 Alert threshold: {config.ALERT_THRESHOLD}
 ⏰ Check interval: {config.CHECK_INTERVAL}s
 🔗 Contract: `{config.CONTRACT_ADDRESS[:10]}...{config.CONTRACT_ADDRESS[-8:]}`
+🌐 Platform: Render.com ({render_region})
+🏷️ Service: {render_service}
 
 🎯 Will alert when pending orders > {config.ALERT_THRESHOLD}
 
-#BotStarted #Monitoring
+#BotStarted #Monitoring #Render
         """.strip()
-        
+
         await self.send_message(message)
     
     async def monitoring_loop(self):
@@ -166,24 +186,37 @@ Bot will continue trying...
             logger.error(f"Bot crashed: {e}")
         finally:
             self.is_running = False
-            await self.send_message("🛑 **Bot Stopped**\n\nMonitoring has been stopped.\n\n#BotStopped")
+            try:
+                await self.send_message("🛑 **Bot Stopped**\n\nMonitoring has been stopped.\n\n#BotStopped #Render")
+            except:
+                pass  # Ignore errors khi shutdown
 
 async def main():
-    """Main function"""
+    """Main function - optimized for Render.com"""
     print(f"""
-🎯 Pending Orders Telegram Bot
-==============================
+🎯 Pending Orders Telegram Bot (Render.com)
+==========================================
 {config}
 Starting bot...
     """)
-    
+
     bot = PendingOrdersBot()
     await bot.run()
 
-if __name__ == "__main__":
+def run_bot():
+    """Entry point cho Render.com"""
     try:
+        # Render.com cần PORT environment variable
+        port = int(os.getenv('PORT', 10000))
+        logger.info(f"Render.com PORT: {port}")
+
+        # Chạy bot
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\n👋 Bot stopped by user")
+        logger.info("Bot stopped by user")
     except Exception as e:
-        print(f"❌ Fatal error: {e}")
+        logger.error(f"Fatal error: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    run_bot()
