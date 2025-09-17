@@ -1,0 +1,20 @@
+# Dependencies cho Telegram Bot
+# Railway deployment ready
+
+# Telegram Bot Library
+python-telegram-bot==20.7
+
+# HTTP Client cho API calls
+aiohttp==3.9.1
+
+# Environment variables loader
+python-dotenv==1.0.0
+
+# Async support (built-in Python 3.7+)
+# asyncio==3.4.3
+
+# Logging và utilities (built-in, nhưng list để rõ ràng)
+# datetime - built-in
+# logging - built-in
+# os - built-in
+# typing - built-in
