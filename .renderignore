@@ -1,0 +1,14 @@
+# Files to ignore during Render deployment
+# Chỉ ignore những file thực sự không cần
+
+# Documentation files (optional)
+*.md
+!README.md
+
+# Development files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
